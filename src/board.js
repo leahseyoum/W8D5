@@ -9,7 +9,7 @@ if (typeof window === 'undefined'){
  * and two white pieces at [3, 3] and [4, 4]
  */
 function _makeGrid () {
-  const grid = new Array(8).fill(new Array(8));
+  const grid = new Array(8).fill().map(()=>new Array(8).fill());
   grid[3][4] = new Piece("black");
   grid[4][3] = new Piece("black");
   grid[3][3] = new Piece("white");
@@ -46,10 +46,14 @@ Board.prototype.isValidPos = function (pos) {
  * throwing an Error if the position is invalid.
  */
 Board.prototype.getPiece = function (pos) {
-  if (this.isValidPos(pos)) {
-    return this[pos[0], pos[1]];
-  } else {
-    throw new Error("Invalid position");
+  if (this.isValidPos(pos) && this.grid[pos[0]][pos[1]]) {
+    return this.grid[pos[0]][pos[1]];
+  } 
+  else if (this.isValidPos(pos)){
+    return undefined
+  }
+  else {
+    throw new Error("Not valid pos!");
   }
 };
 
@@ -58,14 +62,25 @@ Board.prototype.getPiece = function (pos) {
  * matches a given color.
  */
 Board.prototype.isMine = function (pos, color) {
-  return grid[pos[0], pos[1]].color === color;
+  if (this.getPiece(pos)) {
+    return this.getPiece(pos).color === color
+  }
+  else {
+    return false
+  }
+
 };
 
 /**
  * Checks if a given position has a piece on it.
  */
 Board.prototype.isOccupied = function (pos) {
-  return grid[pos[0], pos[1]].color  
+  if (this.grid[pos[0]][pos[1]] && this.isValidPos(pos)){
+    return true
+  }
+  else {
+    return false
+  }
 };
 
 /**
@@ -82,22 +97,27 @@ Board.prototype.isOccupied = function (pos) {
  * Returns empty array if no pieces of the opposite color are found.
  */
 Board.prototype._positionsToFlip = function(pos, color, dir, piecesToFlip){
-  const startingPos = pos;
-  const color = color;
-  const piecesToFlip = [];
-  let y = pos[1]
-  let x = pos[0]
-  let x2 = dir[0]
-  let y2 = dir[1]
-  const newStartingPos = [(x + x), (y + y)];
+  let x = pos[1] + dir[1]; //x is grid[0][i]
+  let y = pos[0] + dir[0]; //y is grid[i]
+  let newStartingPos = [y, x]
 
-  if (this[newStartingPos[0], newStartingPos[1]].isOccupied && !this[newStartingPos[0], newStartingPos[1]].isMine) {
-
+  if (!piecesToFlip){
+    piecesToFlip = [];
   }
 
+  if (!this.isValidPos(pos) || !this.isOccupied(newStartingPos)){
+    piecesToFlip = [];
+  }
+  else if (this.isOccupied(newStartingPos) && !this.isMine(newStartingPos, color)){
+    piecesToFlip.push(newStartingPos);
+    return this._positionsToFlip(newStartingPos, color, dir, piecesToFlip);
+  }
   // concat pieces form recursive calls
   return piecesToFlip;
 };
+
+// b = new Board()
+// b._positionsToFlip([3,3], "white", [1,0])
 
 /**
  * Checks that a position is not already occupied and that the color
@@ -105,7 +125,23 @@ Board.prototype._positionsToFlip = function(pos, color, dir, piecesToFlip){
  * color being flipped.
  */
 Board.prototype.validMove = function (pos, color) {
+  let newArr = [];
+  if (this.isOccupied(pos)){
+    return false;
+  }
+
+  for (let i = 0; i < Board.DIRS.length; i++){
+    let arr = this._positionsToFlip(pos, color, Board.DIRS[i]);
+    if (arr.length > 0){
+      return true
+    }
+  }
+  return false
 };
+
+b = new Board()
+console.log(b.validMove([3,5], "white"))
+
 
 /**
  * Adds a new piece of the given color to the given position, flipping the
