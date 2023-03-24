@@ -9,6 +9,12 @@ if (typeof window === 'undefined'){
  * and two white pieces at [3, 3] and [4, 4]
  */
 function _makeGrid () {
+  const grid = new Array(8).fill(new Array(8));
+  grid[3][4] = new Piece("black");
+  grid[4][3] = new Piece("black");
+  grid[3][3] = new Piece("white");
+  grid[4][4] = new Piece("white");
+  return grid;
 }
 
 /**
@@ -28,6 +34,11 @@ Board.DIRS = [
  * Checks if a given position is on the Board.
  */
 Board.prototype.isValidPos = function (pos) {
+  if ((pos[0] >= 0 && pos[0] < 8) && (pos[1] >= 0 && pos[1] < 8)) {
+      return true;
+  } else {
+    return false;
+  }
 };
 
 /**
@@ -35,6 +46,11 @@ Board.prototype.isValidPos = function (pos) {
  * throwing an Error if the position is invalid.
  */
 Board.prototype.getPiece = function (pos) {
+  if (this.isValidPos(pos)) {
+    return this[pos[0], pos[1]];
+  } else {
+    throw new Error("Invalid position");
+  }
 };
 
 /**
@@ -42,12 +58,14 @@ Board.prototype.getPiece = function (pos) {
  * matches a given color.
  */
 Board.prototype.isMine = function (pos, color) {
+  return grid[pos[0], pos[1]].color === color;
 };
 
 /**
  * Checks if a given position has a piece on it.
  */
 Board.prototype.isOccupied = function (pos) {
+  return grid[pos[0], pos[1]].color  
 };
 
 /**
@@ -64,6 +82,21 @@ Board.prototype.isOccupied = function (pos) {
  * Returns empty array if no pieces of the opposite color are found.
  */
 Board.prototype._positionsToFlip = function(pos, color, dir, piecesToFlip){
+  const startingPos = pos;
+  const color = color;
+  const piecesToFlip = [];
+  let y = pos[1]
+  let x = pos[0]
+  let x2 = dir[0]
+  let y2 = dir[1]
+  const newStartingPos = [(x + x), (y + y)];
+
+  if (this[newStartingPos[0], newStartingPos[1]].isOccupied && !this[newStartingPos[0], newStartingPos[1]].isMine) {
+
+  }
+
+  // concat pieces form recursive calls
+  return piecesToFlip;
 };
 
 /**
